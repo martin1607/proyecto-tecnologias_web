@@ -1,9 +1,17 @@
+<?php
+session_start();
+if (!isset($_SESSION['user'])) {
+    header('Location: login.php');
+    exit;
+}
+?>
+
 <!DOCTYPE html>
 <html lang="es">
   <head>
     <meta charset="UTF-8">
     <title>Recursos Digitales - Dashboard</title>
-    <!-- BOOTSTRAP 4  -->
+
     <link rel="stylesheet" href="https://bootswatch.com/4/superhero/bootstrap.min.css">
   </head>
   <body>
@@ -18,7 +26,12 @@
       </button>
 
       <div class="collapse navbar-collapse" id="navbarSupportedContent">
-        <ul class="navbar-nav ml-auto"></ul>
+        
+        <ul class="navbar-nav ml-auto">
+          <li class="nav-item">
+        <a class="nav-link" href="logout.php">Cerrar sesión</a>
+      </li>
+        </ul>
         <form class="form-inline my-2 my-lg-0" onsubmit="return false;">
           <input class="form-control mr-sm-2"
                  name="search" id="search" type="search"
@@ -40,7 +53,7 @@
               <h5 class="mb-0" id="form-title">Agregar recurso digital</h5>
             </div>
             <div class="card-body">
-              <!-- IMPORTANTE: enctype para soportar archivos -->
+
               <form id="product-form" enctype="multipart/form-data">
                 <input type="hidden" id="productId">
 
@@ -139,7 +152,7 @@
     <script src="https://code.jquery.com/jquery-3.3.1.min.js"
       integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
       crossorigin="anonymous"></script>
-    <!-- Lógica del Frontend -->
+
     <script src="app.js"></script>
   </body>
 </html>
