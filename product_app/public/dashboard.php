@@ -29,8 +29,11 @@ if (!isset($_SESSION['user'])) {
         
         <ul class="navbar-nav ml-auto">
           <li class="nav-item">
-        <a class="nav-link" href="logout.php">Cerrar sesión</a>
-      </li>
+    <a class="nav-link" href="catalogo.php" target="_blank">Ver catálogo público</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="logout.php">Cerrar sesión</a>
+  </li>
         </ul>
         <form class="form-inline my-2 my-lg-0" onsubmit="return false;">
           <input class="form-control mr-sm-2"
