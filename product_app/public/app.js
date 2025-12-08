@@ -1,15 +1,19 @@
-// app.js - Versión para Recursos Digitales
+// app.js - Dashboard de Recursos Digitales con gráficas Chart.js
 
 $(document).ready(function() {
     let edit = false; // false = creando, true = editando
 
+    // Referencias a las gráficas
+    let chartDeptos = null;
+    let chartExtensiones = null;
+
     // Ocultar cuadro de resultado al inicio
     $('#product-result').hide();
 
-    // Cargar lista de recursos en cuanto inicia
+    // Cargar lista de recursos al inicio
     listarRecursos();
 
-    // ----------- Función para elegir ícono según extensión -----------
+    // ----------- Función: elegir ícono por extensión -----------
     function getIconByExtension(ext) {
         if (!ext) return 'img/file.png';
         ext = ext.toLowerCase();
@@ -67,7 +71,6 @@ $(document).ready(function() {
                         metadatos += `<li>Empresa: ${recurso.empresa}</li>`;
                         metadatos += `<li>Fecha: ${recurso.fecha_creacion}</li>`;
 
-                        // Construir fila
                         template += `
                             <tr productId="${recurso.id}">
                                 <td>${recurso.id}</td>
@@ -107,6 +110,9 @@ $(document).ready(function() {
                 }
 
                 $('#products').html(template);
+
+                // 🆕 Cada vez que listamos, actualizamos estadísticas
+                cargarEstadisticas();
             },
             error: function(xhr, status, error) {
                 console.error("❌ Error al cargar recursos:", error);
@@ -121,7 +127,7 @@ $(document).ready(function() {
         });
     }
 
-    // ----------- Búsqueda de recursos -----------
+    // ----------- Búsqueda de recursos (dashboard) -----------
     $('#search').keyup(function() {
         let search = $('#search').val().trim();
 
@@ -205,6 +211,9 @@ $(document).ready(function() {
                         </tr>
                     `);
                 }
+
+                // También actualizamos estadísticas
+                cargarEstadisticas();
             },
             error: function(xhr, status, error) {
                 console.error("❌ Error en búsqueda:", error);
@@ -220,7 +229,6 @@ $(document).ready(function() {
     $('#product-form').submit(function(e) {
         e.preventDefault();
 
-        // Validación mínima
         if (!$('#nombre').val().trim() ||
             !$('#autor').val().trim() ||
             !$('#departamento').val().trim() ||
@@ -236,7 +244,6 @@ $(document).ready(function() {
             return;
         }
 
-        // Crear FormData
         let formData = new FormData();
         formData.append('id', $('#productId').val());
         formData.append('nombre', $('#nombre').val().trim());
@@ -248,7 +255,6 @@ $(document).ready(function() {
 
         let archivoInput = $('#archivo')[0];
 
-        // En modo crear es obligatorio archivo; en editar es opcional
         if (!edit) {
             if (!archivoInput.files.length) {
                 $('#product-result').show();
@@ -262,7 +268,6 @@ $(document).ready(function() {
                 formData.append('archivo', archivoInput.files[0]);
             }
         } else {
-            // Si está editando y seleccionó un archivo nuevo
             if (archivoInput.files.length > 0) {
                 formData.append('archivo', archivoInput.files[0]);
             }
@@ -276,8 +281,8 @@ $(document).ready(function() {
             url: url,
             type: 'POST',
             data: formData,
-            processData: false, // No transformar FormData en querystring
-            contentType: false, // Dejar que el navegador maneje el multipart
+            processData: false,
+            contentType: false,
             success: function(response) {
                 console.log("📥 Respuesta del servidor:", response);
 
@@ -301,7 +306,7 @@ $(document).ready(function() {
 
                 if (status === 'success') {
                     limpiarFormulario();
-                    listarRecursos();
+                    listarRecursos();  // Esto también recarga gráficas
                 }
             },
             error: function(xhr, status, error) {
@@ -351,7 +356,7 @@ $(document).ready(function() {
             `);
 
             if (status === 'success') {
-                listarRecursos();
+                listarRecursos();  // Esto también recarga gráficas
             }
         }).fail(function(xhr, status, error) {
             console.error("❌ Error en eliminación:", error);
@@ -406,8 +411,6 @@ $(document).ready(function() {
             $('#empresa').val(recurso.empresa);
             $('#fecha_creacion').val(recurso.fecha_creacion);
             $('#descripcion').val(recurso.descripcion || '');
-
-            // No se puede prellenar el input file por seguridad, se deja vacío
             $('#archivo').val(null);
 
             $('#form-title').text('Editar recurso digital');
@@ -419,5 +422,70 @@ $(document).ready(function() {
             alert('Error de conexión con el servidor');
         });
     });
+
+    // ----------- 🆕 Cargar estadísticas y dibujar gráficas -----------
+    function cargarEstadisticas() {
+        const canvasDepto = document.getElementById('chartDepartamentos');
+        const canvasExt   = document.getElementById('chartExtensiones');
+
+        if (!canvasDepto || !canvasExt) {
+            return; // no estamos en el dashboard
+        }
+
+        $.getJSON('stats.php', function(data) {
+            console.log("📊 Datos estadísticas:", data);
+
+            const porDepto = data.porDepartamento || [];
+            const porExt   = data.porExtension || [];
+
+            const labelsDepto = porDepto.map(r => r.departamento || 'Sin depto');
+            const dataDepto   = porDepto.map(r => parseInt(r.total));
+
+            const labelsExt = porExt.map(r => (r.extension || 'n/a').toUpperCase());
+            const dataExt   = porExt.map(r => parseInt(r.total));
+
+            const ctxDepto = canvasDepto.getContext('2d');
+            const ctxExt   = canvasExt.getContext('2d');
+
+            if (chartDeptos) chartDeptos.destroy();
+            if (chartExtensiones) chartExtensiones.destroy();
+
+            chartDeptos = new Chart(ctxDepto, {
+                type: 'bar',
+                data: {
+                    labels: labelsDepto,
+                    datasets: [{
+                        label: 'Recursos por departamento',
+                        data: dataDepto
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            precision: 0
+                        }
+                    }
+                }
+            });
+
+            chartExtensiones = new Chart(ctxExt, {
+                type: 'pie',
+                data: {
+                    labels: labelsExt,
+                    datasets: [{
+                        label: 'Recursos por extensión',
+                        data: dataExt
+                    }]
+                },
+                options: {
+                    responsive: true
+                }
+            });
+        }).fail(function(xhr, status, error) {
+            console.error("❌ Error al cargar estadísticas:", error);
+        });
+    }
 
 });

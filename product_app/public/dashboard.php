@@ -5,7 +5,6 @@ if (!isset($_SESSION['user'])) {
     exit;
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="es">
   <head>
@@ -18,7 +17,7 @@ if (!isset($_SESSION['user'])) {
 
     <!-- BARRA DE NAVEGACIÓN  -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-      <a class="navbar-brand" href=".">Recursos Digitales</a>
+      <a class="navbar-brand" href="dashboard.php">Recursos Digitales</a>
       <button class="navbar-toggler" type="button" data-toggle="collapse"
               data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
               aria-expanded="false" aria-label="Toggle navigation">
@@ -26,15 +25,17 @@ if (!isset($_SESSION['user'])) {
       </button>
 
       <div class="collapse navbar-collapse" id="navbarSupportedContent">
-        
+        <!-- Links de la derecha -->
         <ul class="navbar-nav ml-auto">
           <li class="nav-item">
-    <a class="nav-link" href="catalogo.php" target="_blank">Ver catálogo público</a>
-  </li>
-  <li class="nav-item">
-    <a class="nav-link" href="logout.php">Cerrar sesión</a>
-  </li>
+            <a class="nav-link" href="catalogo.php" target="_blank">Ver catálogo público</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="logout.php">Cerrar sesión</a>
+          </li>
         </ul>
+
+        <!-- Buscador -->
         <form class="form-inline my-2 my-lg-0" onsubmit="return false;">
           <input class="form-control mr-sm-2"
                  name="search" id="search" type="search"
@@ -116,8 +117,9 @@ if (!isset($_SESSION['user'])) {
           </div>
         </div>
 
-        <!-- TABLA  -->
+        <!-- TABLA + GRÁFICAS -->
         <div class="col-md-7">
+          <!-- Mensajes / resultado -->
           <div class="card my-4" id="product-result">
             <div class="card-header">
               <h5 class="mb-0">Resultado</h5>
@@ -128,6 +130,7 @@ if (!isset($_SESSION['user'])) {
             </div>
           </div>
 
+          <!-- Tabla de recursos -->
           <div class="card">
             <div class="card-header">
               <h5 class="mb-0">Lista de recursos digitales</h5>
@@ -148,14 +151,38 @@ if (!isset($_SESSION['user'])) {
             </div>
           </div>
 
+          <!-- Estadísticas con Chart.js -->
+          <div class="card mt-4">
+            <div class="card-header">
+              <h5 class="mb-0">Estadísticas de recursos</h5>
+            </div>
+            <div class="card-body">
+              <div class="row">
+                <div class="col-md-6">
+                  <h6 class="text-center">Recursos por departamento</h6>
+                  <canvas id="chartDepartamentos" height="150"></canvas>
+                </div>
+                <div class="col-md-6">
+                  <h6 class="text-center">Recursos por extensión</h6>
+                  <canvas id="chartExtensiones" height="150"></canvas>
+                </div>
+              </div>
+            </div>
+          </div>
+
         </div>
       </div>
     </div>
 
+    <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.3.1.min.js"
       integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
       crossorigin="anonymous"></script>
 
+    <!-- Chart.js para las gráficas (IMPORTANTÍSIMO que esté antes de app.js) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Lógica del dashboard -->
     <script src="app.js"></script>
   </body>
 </html>
