@@ -1,63 +1,68 @@
 <?php
-// stats.php
 header('Content-Type: application/json; charset=utf-8');
 
-$host = 'localhost';
-$user = 'root';
-$pass = 'Axelchivas1607';
-$db   = 'marketzone_fix';
-
-$mysqli = new mysqli($host, $user, $pass, $db);
+$mysqli = new mysqli("localhost","root","Axelchivas1607","marketzone_fix");
 if ($mysqli->connect_errno) {
-    echo json_encode([
-        'error' => 'Error de conexión: ' . $mysqli->connect_error
-    ], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+    echo json_encode(["error"=>"Error BD"]);
     exit;
 }
 
-// 1) Recursos por departamento
-$sqlDepto = "
-    SELECT 
-        IFNULL(departamento, 'Sin departamento') AS departamento,
-        COUNT(*) AS total
-    FROM recursos
-    WHERE eliminado = 0
-    GROUP BY departamento
-    ORDER BY total DESC
+/**********************
+  1) RECURSOS POR DEPTO
+**********************/
+$sqlDepto="
+SELECT departamento, COUNT(*) AS total
+FROM recursos
+WHERE eliminado=0
+GROUP BY departamento;
 ";
 
-$resultDepto = $mysqli->query($sqlDepto);
-$porDepartamento = [];
-if ($resultDepto) {
-    while ($row = $resultDepto->fetch_assoc()) {
-        $porDepartamento[] = $row;
-    }
-    $resultDepto->free();
+$porDepartamento=[];
+$res=$mysqli->query($sqlDepto);
+while($row=$res->fetch_assoc()){
+    $porDepartamento[]=$row;
 }
 
-// 2) Recursos por extensión
-$sqlExt = "
-    SELECT 
-        IFNULL(extension, 'n/a') AS extension,
-        COUNT(*) AS total
-    FROM recursos
-    WHERE eliminado = 0
-    GROUP BY extension
-    ORDER BY total DESC
+/**********************
+  2) RECURSOS POR EXT
+**********************/
+$sqlExt="
+SELECT extension, COUNT(*) AS total
+FROM recursos
+WHERE eliminado=0
+GROUP BY extension;
 ";
 
-$resultExt = $mysqli->query($sqlExt);
-$porExtension = [];
-if ($resultExt) {
-    while ($row = $resultExt->fetch_assoc()) {
-        $porExtension[] = $row;
-    }
-    $resultExt->free();
+$porExtension=[];
+$res=$mysqli->query($sqlExt);
+while($row=$res->fetch_assoc()){
+    $porExtension[]=$row;
 }
+
+/**********************
+  3) DESCARGAS POR DÍA
+**********************/
+$sqlDia="
+SELECT 
+    DAYNAME(fecha_hora) AS dia,
+    COUNT(*) AS total
+FROM bitacora_descargas
+GROUP BY DAYNAME(fecha_hora);
+";
+
+$porDiaSemana=[];
+$res=$mysqli->query($sqlDia);
+while($row=$res->fetch_assoc()){
+    $porDiaSemana[]=$row;
+}
+
+/***************
+ RETORNO JSON
+***************/
+echo json_encode([
+    "porDepartamento"=>$porDepartamento,
+    "porExtension"=>$porExtension,
+    "porDiaSemana"=>$porDiaSemana
+], JSON_PRETTY_PRINT);
 
 $mysqli->close();
-
-echo json_encode([
-    'porDepartamento' => $porDepartamento,
-    'porExtension'    => $porExtension
-], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);

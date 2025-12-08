@@ -15,103 +15,67 @@ if (!isset($_SESSION['user'])) {
   </head>
   <body>
 
-    <!-- BARRA DE NAVEGACIÓN  -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
       <a class="navbar-brand" href="dashboard.php">Recursos Digitales</a>
-      <button class="navbar-toggler" type="button" data-toggle="collapse"
-              data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
-              aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
 
       <div class="collapse navbar-collapse" id="navbarSupportedContent">
-        <!-- Links de la derecha -->
+
         <ul class="navbar-nav ml-auto">
           <li class="nav-item">
             <a class="nav-link" href="catalogo.php" target="_blank">Ver catálogo público</a>
           </li>
+
           <li class="nav-item">
             <a class="nav-link" href="logout.php">Cerrar sesión</a>
           </li>
         </ul>
 
-        <!-- Buscador -->
-        <form class="form-inline my-2 my-lg-0" onsubmit="return false;">
-          <input class="form-control mr-sm-2"
-                 name="search" id="search" type="search"
-                 placeholder="Nombre, autor, departamento o empresa"
-                 aria-label="Search">
-          <button class="btn btn-success my-2 my-sm-0" type="button">
-            Buscar
-          </button>
+        <form class="form-inline ml-4" onsubmit="return false;">
+          <input class="form-control mr-2" id="search"
+                 type="text" placeholder="Buscar recurso...">
         </form>
+
       </div>
     </nav>
 
-    <div class="container">
-      <div class="row p-4">
+    <div class="container mt-4">
+      <div class="row">
+
         <!-- FORMULARIO -->
         <div class="col-md-5">
           <div class="card">
-            <div class="card-header">
-              <h5 class="mb-0" id="form-title">Agregar recurso digital</h5>
-            </div>
+            <div class="card-header"><h5 id="form-title">Agregar recurso digital</h5></div>
             <div class="card-body">
 
               <form id="product-form" enctype="multipart/form-data">
                 <input type="hidden" id="productId">
 
-                <div class="form-group">
-                  <label for="nombre">Nombre del recurso</label>
-                  <input class="form-control" type="text" id="nombre"
-                         placeholder="Ej. Manual de instalación" required>
-                </div>
+                <label>Nombre</label>
+                <input type="text" id="nombre" class="form-control" required>
 
-                <div class="form-group">
-                  <label for="autor">Autor</label>
-                  <input class="form-control" type="text" id="autor"
-                         placeholder="Ej. Juan Pérez" required>
-                </div>
+                <label class="mt-2">Autor</label>
+                <input type="text" id="autor" class="form-control" required>
 
-                <div class="form-group">
-                  <label for="departamento">Departamento</label>
-                  <input class="form-control" type="text" id="departamento"
-                         placeholder="Ej. Desarrollo" required>
-                </div>
+                <label class="mt-2">Departamento</label>
+                <input type="text" id="departamento" class="form-control" required>
 
-                <div class="form-group">
-                  <label for="empresa">Empresa / Institución</label>
-                  <input class="form-control" type="text" id="empresa"
-                         placeholder="Ej. Mi Empresa SA de CV" required>
-                </div>
+                <label class="mt-2">Empresa</label>
+                <input type="text" id="empresa" class="form-control" required>
 
-                <div class="form-group">
-                  <label for="fecha_creacion">Fecha de creación</label>
-                  <input class="form-control" type="date" id="fecha_creacion" required>
-                </div>
+                <label class="mt-2">Fecha creación</label>
+                <input type="date" id="fecha_creacion" class="form-control" required>
 
-                <div class="form-group">
-                  <label for="descripcion">Descripción</label>
-                  <textarea class="form-control" id="descripcion" cols="30" rows="4"
-                            placeholder="Descripción breve del recurso"></textarea>
-                </div>
+                <label class="mt-2">Descripción</label>
+                <textarea id="descripcion" class="form-control"></textarea>
 
-                <div class="form-group">
-                  <label for="archivo">Archivo</label>
-                  <input class="form-control-file" type="file" id="archivo" required>
-                  <small class="form-text text-muted">
-                    Extensiones permitidas: pdf, zip, rar, json, xml, jar, exe, doc, docx, xls, xlsx, ppt, pptx
-                  </small>
-                </div>
+                <label class="mt-2">Archivo</label>
+                <input type="file" id="archivo" class="form-control" required>
 
-                <button class="btn btn-primary btn-block text-center" type="submit">
-                  Guardar recurso
+                <button class="btn btn-primary btn-block mt-2" type="submit">Guardar</button>
+                <button class="btn btn-secondary btn-block mt-2" type="button" id="btn-clear">
+                  Limpiar
                 </button>
 
-                <button class="btn btn-secondary btn-block text-center mt-2"
-                        type="button" id="btn-clear">
-                  Limpiar formulario
-                </button>
               </form>
             </div>
           </div>
@@ -119,31 +83,21 @@ if (!isset($_SESSION['user'])) {
 
         <!-- TABLA + GRÁFICAS -->
         <div class="col-md-7">
-          <!-- Mensajes / resultado -->
-          <div class="card my-4" id="product-result">
-            <div class="card-header">
-              <h5 class="mb-0">Resultado</h5>
-            </div>
+
+          <div class="card mb-4" id="product-result">
+            <div class="card-header"><h5>Resultado</h5></div>
             <div class="card-body">
-              <!-- RESULTADO -->
-              <ul id="container" style="margin-bottom: 0;"></ul>
+              <ul id="container"></ul>
             </div>
           </div>
 
-          <!-- Tabla de recursos -->
           <div class="card">
-            <div class="card-header">
-              <h5 class="mb-0">Lista de recursos digitales</h5>
-            </div>
+            <div class="card-header"><h5>Lista de recursos digitales</h5></div>
             <div class="card-body p-0">
-              <table class="table table-bordered table-sm mb-0">
-                <thead class="thead-light">
+              <table class="table table-sm table-bordered mb-0">
+                <thead>
                   <tr>
-                    <th style="width: 5%;">Id</th>
-                    <th style="width: 20%;">Nombre</th>
-                    <th style="width: 35%;">Metadatos</th>
-                    <th style="width: 15%;">Archivo</th>
-                    <th style="width: 15%;">Acciones</th>
+                    <th>ID</th><th>Nombre</th><th>Metadatos</th><th>Archivo</th><th>Acciones</th>
                   </tr>
                 </thead>
                 <tbody id="products"></tbody>
@@ -151,38 +105,40 @@ if (!isset($_SESSION['user'])) {
             </div>
           </div>
 
-          <!-- Estadísticas con Chart.js -->
+          <!--GRÁFICAS -->
           <div class="card mt-4">
-            <div class="card-header">
-              <h5 class="mb-0">Estadísticas de recursos</h5>
-            </div>
+            <div class="card-header"><h5>Estadísticas de recursos</h5></div>
             <div class="card-body">
+
               <div class="row">
                 <div class="col-md-6">
                   <h6 class="text-center">Recursos por departamento</h6>
                   <canvas id="chartDepartamentos" height="150"></canvas>
                 </div>
+
                 <div class="col-md-6">
                   <h6 class="text-center">Recursos por extensión</h6>
                   <canvas id="chartExtensiones" height="150"></canvas>
                 </div>
+
+                
+                <div class="col-md-12 mt-4">
+                  <h6 class="text-center">Descargas por día de la semana</h6>
+                  <canvas id="chartDiaSemana" height="170"></canvas>
+                </div>
               </div>
+
             </div>
           </div>
 
         </div>
+
       </div>
     </div>
 
-    <!-- jQuery -->
-    <script src="https://code.jquery.com/jquery-3.3.1.min.js"
-      integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
-      crossorigin="anonymous"></script>
-
-    <!-- Chart.js para las gráficas (IMPORTANTÍSIMO que esté antes de app.js) -->
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-    <!-- Lógica del dashboard -->
     <script src="app.js"></script>
+
   </body>
 </html>
